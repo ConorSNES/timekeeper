@@ -1,10 +1,17 @@
-# timekeeper
+# ![timekeeper icon](media/icon/icon_48.png) Timekeeper
 
 |![main screen](_screenshots/main.png)|
 |---|
 
-Large display, widget-like clock application with rich keyboard support. 
+Large display, widget-like clock application with rich keyboard shortcut support. 
 Remake of an older python script I used to use for time management.
+
+## Features
+
+- extremely portable
+- highly keyboard-accessible
+- persistent config
+- light/dark theme support
 
 ## Licence
 
