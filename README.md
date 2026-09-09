@@ -1,9 +1,9 @@
 # timekeeper
 
-|||
-|---|---|---|
+|![main screen](_screenshots/main.png)|
+|---|
 
-Large display, widget-like clock application with keyboard-only access. 
+Large display, widget-like clock application with rich keyboard support. 
 Remake of an older python script I used to use for time management.
 
 ## Licence
