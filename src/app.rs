@@ -2,25 +2,28 @@ use std::time::Duration;
 
 use chrono::{DateTime, Days, Local, TimeDelta, Timelike};
 use eframe::egui::{
-    self, Color32, FontFamily, Frame, Key, KeyboardShortcut, Margin, Modal, ModalResponse, Modifiers, RichText, TextEdit, Theme, Ui,
+    self, Color32, Frame, Key, KeyboardShortcut, Margin, Modifiers, Theme, Ui,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::app::action::AppAction;
-use crate::app::lib::check_bind;
+use crate::app::managed_focus::{FocusManager, ManagedFocus};
 use crate::app::state::AppState;
-use crate::font::{FONTFAM_HEV, FONTFAM_MED};
 
 mod action;
 mod menubar;
 mod state;
 mod lib;
+mod managed_focus;
+mod widgets;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct App {
     state: AppState,
     #[serde(skip)]
     action: AppAction,
+    #[serde(skip)]
+    managed_focus: FocusManager,
 }
 
 impl App {
@@ -79,25 +82,6 @@ impl App {
     }
 
     /**
-     * modal with custom style for app
-     */
-    fn draw_modal<T>(ui: &mut Ui, inner: impl FnOnce(&mut Ui) -> T) -> ModalResponse<T> {
-        let modalframe = Frame::popup(ui.style()).fill(Self::get_theme_cols(ui).1);
-
-        Modal::new("action".into())
-            .frame(modalframe)
-            .show(ui, inner)
-    }
-
-    /**
-     * combination of sign/absolute for a uint,
-     * for separating the sign and magnitude of a number
-     */
-    fn sigabs(v: i64) -> (i64, i64) {
-        (v.signum(), v.abs())
-    }
-
-    /**
      * custom parser for absolute user timestamps
      * 
      * timestamps are in the format [[hh:]mm:]ss
@@ -136,6 +120,11 @@ impl App {
     }
 
 
+    /**
+     * parser for relative timestamps, automatically calculating based on a difference from current time.
+     * 
+     * timestamps are in the format [+|-][[hh:]mm:]ss
+     */
     fn parse_user_timestamp_rel(value: String) -> DateTime<Local> {
         let timenow = chrono::offset::Local::now();
 
@@ -173,31 +162,6 @@ impl App {
         // final result is the current time with the delta added
         timenow.clone() + delta        
     }
-
-    /**
-     * function for formatting user timestamp into readable format (relative to current time)
-     */
-    fn format_user_timestamp(ts: DateTime<Local>) -> String {
-        let timenow = chrono::offset::Local::now();
-        let diff = ts - timenow;
-        let hour = (diff.num_hours()).abs();
-        let mins = (diff.num_minutes() % 60).abs();
-        let (sign, secs) = Self::sigabs((diff.num_seconds() % 60) % 60);
-        format!(
-            "t{}{:02}:{:02}:{:02}",
-            if sign < 0 { "+" } else { "-" },
-            hour,
-            mins,
-            secs
-        )
-    }
-
-    /**
-     * returns formatted timestamp if one is present in state;
-     */
-    fn _try_get_timestamp_formatted(&self) -> Option<String> {
-        self.state.get_timestamp().map(|v| Self::format_user_timestamp(v))
-    }
 }
 
 impl eframe::App for App {
@@ -230,98 +194,42 @@ impl eframe::App for App {
             .show(ui, |ui| {
                 ui.centered_and_justified(|ui| {
                     ui.vertical_centered(|ui| {
-                        // collect system time NOW
-                        let timenow = chrono::offset::Local::now();
-
-                        ui.label(
-                            RichText::new(timenow.format("%H:%M:%S").to_string())
-                                .size(48.0)
-                                .family(FontFamily::Name(FONTFAM_HEV.into()))
-                                .strong(),
-                        );
+                        Self::draw_big_clock(ui);
 
                         // add delta time if available;
                         if let Some(timestamp) = self.state.get_timestamp() {
-                            let timestamp_text = Self::format_user_timestamp(timestamp);
-                            let timestamp_tooltip = timestamp.format("%H:%M:%S").to_string();
-                            ui.label(
-                                RichText::new(timestamp_text)
-                                    .size(24.0)
-                                    .family(FontFamily::Name(FONTFAM_MED.into()))
-                                    .weak(),
-                            ).on_hover_text(timestamp_tooltip);
+                            Self::draw_delta_time(ui, timestamp);
                         }
                     });
                 });
             });
 
         // draw modals for actions
-        let mut transition = None;
-        match &mut self.action {
-            AppAction::SetTimestampAbs(newts) => {
-                Self::draw_modal(ui, |ui| {
-                    ui.vertical_centered_justified(|ui| {
-                    ui.label("Create an absolute timestamp;\nFormat is in [[hh:]mm:]ss\nAll timestamps assumed to be in future");
-                    ui.add(
-                        TextEdit::singleline(newts).hint_text("00:00:00")
-                    );
-                    ui.horizontal(|ui| {
-                        if ui.button(RichText::from("Apply").strong()).clicked() 
-                            || check_bind(ui, &Self::KEYBIND_SUBMIT_GENERIC) 
-                        {
-                            // parse and apply
-                            let timestamp = Self::parse_user_timestamp_abs(newts.to_string());
-                            self.state.set_timestamp(timestamp);
-
-                            // return to standard position
-                            transition = Some(AppAction::None)
-                        }
-                        if ui.button("Exit").clicked() 
-                            || check_bind(ui, &Self::KEYBIND_DISMISS_GENERIC) 
-                        {
-                            transition = Some(AppAction::None)
-                        }
-                    })
-                })
-                });
+        if let Some(v) = match &mut self.action {
+            AppAction::TimestampAbsRequest(newts) => {
+                Self::draw_absolute_timestamp_modal(ui, newts, &mut self.managed_focus)
             }
-            AppAction::SetTimestampRel(newts) => {
-                Self::draw_modal(ui, |ui| {
-                    ui.vertical_centered_justified(|ui| {
-                        ui.label("Create a relative timestamp;\nFormat is in [+|-][[hh:]mm:]ss");
-                        ui.add(
-                            TextEdit::singleline(newts).hint_text("±00:00:00")
-                        );
-                        ui.horizontal(|ui| {
-                            if ui.button(RichText::from("Apply").strong()).clicked() 
-                                || check_bind(ui, &Self::KEYBIND_SUBMIT_GENERIC) 
-                                {
-                                // parse and apply
-                                let new_timestamp = Self::parse_user_timestamp_rel(newts.to_string());
-                                self.state.set_timestamp(new_timestamp);
-
-                                // return to standard position
-                                transition = Some(AppAction::None)
-                            }
-                            if ui.button("Exit").clicked() 
-                                || check_bind(ui, &Self::KEYBIND_DISMISS_GENERIC) 
-                            {
-                                transition = Some(AppAction::None)
-                            }
-                        })
-                    })
-                });
+            AppAction::TimestampRelRequest(newts) => {
+                Self::draw_relative_timestamp_modal(ui, newts, &mut self.managed_focus)
             }
-            _ => (),
+            _ => {
+                // if no modal is present, reset the focus management
+                self.managed_focus.reset_focus();
+                None
+            },
         }
-        if let Some(v) = transition {
+        
+        {
             self.action = v
         };
 
-        // apply lingering "instant" actions;
+        // apply "instant" actions;
         match self.action {
             AppAction::Exit => {
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+            AppAction::SetTimestamp(v) => {
+                self.state.set_timestamp(v);
             }
             AppAction::ResTimestamp => {
                 // reset the timestamp
@@ -333,6 +241,9 @@ impl eframe::App for App {
             }
             _ => {}
         }
+
+        // apply focus...
+        self.managed_focus.apply_focus(ui);
 
         // force repaint (egui will get lazy!)
         ui.request_repaint_after(Duration::from_secs(1));

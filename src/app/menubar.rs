@@ -1,6 +1,6 @@
-use eframe::egui::{Button, Key, KeyboardShortcut, Modifiers, Response, Ui};
+use eframe::egui::{Key, KeyboardShortcut, Modifiers, Ui};
 
-use crate::app::{App, action::AppAction, lib::check_bind};
+use crate::app::{App, action::AppAction, lib::{check_bind, draw_bind_button}};
 
 impl App {
     const KEYBIND_NEW_RELATIVE: KeyboardShortcut = KeyboardShortcut::new(Modifiers::COMMAND, Key::N);
@@ -9,15 +9,6 @@ impl App {
     const KEYBIND_EXIT: KeyboardShortcut = KeyboardShortcut::new(Modifiers::NONE, Key::F4);
     // todo: there is no message in program for the borderless keybind.
     const KEYBIND_BORDERLESS: KeyboardShortcut = KeyboardShortcut::new(Modifiers::ALT, Key::B);
-
-    /**
-     * draws a button with an associated keybind; does not merge shortcut state with output response
-     */
-    fn draw_bind_button(ui: &mut Ui, label: &str, bind: &KeyboardShortcut) -> Response {
-        ui.add(
-            Button::new(label).shortcut_text(ui.ctx().format_shortcut(bind))
-        )
-    }
 
     // Creates the borderless config checkbox.
     fn draw_borderless_config(app: &mut App, ui: &mut Ui) {
@@ -48,20 +39,20 @@ impl App {
             ui.menu_button("File", |ui| {
                 Self::draw_borderless_config(app, ui);
                 Self::draw_themeconfig(ui);
-                if Self::draw_bind_button(ui, "Exit", &Self::KEYBIND_EXIT).clicked() {
+                if draw_bind_button(ui, "Exit", &Self::KEYBIND_EXIT).clicked() {
                     app.set_action(AppAction::Exit);
                 }
             });
             ui.menu_button("Timestamp", |ui| {
-                if Self::draw_bind_button(ui, "Set (relative)", &Self::KEYBIND_NEW_RELATIVE).clicked() 
+                if draw_bind_button(ui, "Set (relative)", &Self::KEYBIND_NEW_RELATIVE).clicked() 
                 {
-                    app.set_action(AppAction::SetTimestampRel("".to_owned()));
+                    app.set_action(AppAction::TimestampRelRequest("".to_owned()));
                 }
-                if Self::draw_bind_button(ui, "Set (absolute)", &Self::KEYBIND_NEW_ABSOLUTE).clicked()
+                if draw_bind_button(ui, "Set (absolute)", &Self::KEYBIND_NEW_ABSOLUTE).clicked()
                 {
-                    app.set_action(AppAction::SetTimestampAbs("".to_owned()));
+                    app.set_action(AppAction::TimestampAbsRequest("".to_owned()));
                 }
-                if Self::draw_bind_button(ui, "Reset", &Self::KEYBIND_RESET_TIME).clicked() {
+                if draw_bind_button(ui, "Reset", &Self::KEYBIND_RESET_TIME).clicked() {
                     app.set_action(AppAction::ResTimestamp);
                 }
             });
@@ -85,10 +76,10 @@ impl App {
             app.set_action(AppAction::Exit);
         }
         else if check_bind(ui, &Self::KEYBIND_NEW_ABSOLUTE) {
-            app.set_action(AppAction::SetTimestampAbs("".to_owned()));
+            app.set_action(AppAction::TimestampAbsRequest("".to_owned()));
         }
         else if check_bind(ui, &Self::KEYBIND_NEW_RELATIVE) {
-            app.set_action(AppAction::SetTimestampRel("".to_owned()));
+            app.set_action(AppAction::TimestampRelRequest("".to_owned()));
         }
         else if check_bind(ui, &Self::KEYBIND_RESET_TIME) {
             app.set_action(AppAction::ResTimestamp);

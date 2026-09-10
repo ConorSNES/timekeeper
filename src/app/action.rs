@@ -1,10 +1,13 @@
+use chrono::{DateTime, Local};
+
 
 /** Represents deferred, memory safe execution of one action. */
 #[derive(Debug, Clone)]
 pub enum AppAction {
     None,
-    SetTimestampAbs(String),
-    SetTimestampRel(String),
+    TimestampAbsRequest(String),
+    TimestampRelRequest(String),
+    SetTimestamp(DateTime<Local>),
     ResTimestamp,
     RefreshBorderless,
     Exit
