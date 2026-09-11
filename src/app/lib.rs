@@ -49,3 +49,33 @@ pub fn format_delta_time(delta : TimeDelta) -> String {
         secs
     )
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    /** test basic use of sigabs  */
+    fn test_sigabs() {
+        const SAMPLES : &[(i64, i64, i64)] = &[
+            (-12, -1, 12),
+            (100, 1, 100),
+            (0, 0, 0),
+            (i64::MAX, 1, i64::MAX),
+        ];
+
+        for v in SAMPLES {
+            let result = sigabs(v.0);
+            assert_eq!(result.0, v.1);
+            assert_eq!(result.1, v.2);
+        }
+    }
+
+    #[test]
+    #[should_panic]
+    /** because of the usage of `i64::abs()`, `sigabs()` is expected to fail when evaluating `i64::MIN. */
+    fn test_sigabs_overflow() {
+        let v = sigabs(i64::MIN);
+        if v.0 == i64::MIN { panic!("Sigabs result is signed!") }
+    }
+}
