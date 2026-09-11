@@ -56,7 +56,7 @@ impl App {
                     app.set_action(AppAction::ResTimestamp);
                 }
             });
-            ui.menu_button("About", |ui| {
+            ui.menu_button("Help", |ui| {
                 ui.label(format!("{}, version {}", Self::PKG_NAME, Self::PKG_VERSION));
                 ui.label("Authored by Conor SS 2026");
             });
