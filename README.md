@@ -1,5 +1,7 @@
 # ![timekeeper icon](media/icon/icon_48.png) Timekeeper
 
+[![run-tests](https://github.com/ConorSNES/timekeeper/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ConorSNES/timekeeper/actions/workflows/run-tests.yml)
+
 |![main screen](_screenshots/main.png)|
 |---|
 
