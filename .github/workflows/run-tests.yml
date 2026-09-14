@@ -2,9 +2,11 @@ name: run-tests
 
 on:
   push:
-    branches: [$default-branch]
+    branches: 
+      - 'autotest**'
   pull_request:
-    branches: [$default-branch]
+    branches: 
+      - 'autotest**'
   workflow_dispatch:
     value: true
 
