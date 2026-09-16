@@ -100,7 +100,6 @@ jobs:
       with:
         file: 'Cargo.toml'
         field: 'package.version'
-    - name: Pull 
     - name: Download artefacts
       uses: actions/download-artifact@v8.0.1
     - name: Add artefacts to release
