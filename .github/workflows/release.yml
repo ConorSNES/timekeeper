@@ -83,7 +83,6 @@ jobs:
       path: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}.zip
       archive: false
       overwrite: true
-    
 
   add-artefacts-to-release:
     name: Add build artefacts to release
@@ -112,4 +111,3 @@ jobs:
         gzip: false
         allow_override: true
         draft: false
-
