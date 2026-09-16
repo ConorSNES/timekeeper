@@ -1,0 +1,51 @@
+name: release
+
+on:
+  push:
+    branches: 
+      - 'release'
+  pull_request:
+    branches: 
+      - 'release'
+  workflow_dispatch:
+    value: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fetch-cargo-semver:
+    runs-on: ubuntu-slim
+
+    steps:
+    - uses: actions/checkout@v7
+    - name: Pull semver of commit
+      id: semver
+      uses: SebRollen/toml-action@v1.2.0
+      with:
+        file: 'Cargo.toml'
+        field: 'package.version'
+    - name: Create/push semver tag
+      with:
+        tag: v${{ steps.semver.outputs.value }}
+        message: Auto-generated CI semver from package.version.
+        tag_exists_error: false
+
+  build-add-files:
+    needs: fetch-cargo-semver
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v7
+    - name: Collect release tag
+      id: tag
+      uses: "WyriHaximus/github-action-get-previous-tag@v2"
+    - name: Echo release tag
+      run: echo ${{ steps.tag.outputs.value }}
+    # - name: Build program
+    #   run: cargo build --verbose
