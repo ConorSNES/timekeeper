@@ -35,18 +35,19 @@ jobs:
 
     strategy:
       matrix:
-        - {
-          os: ubuntu-latest,
-          outname: linux_x86-64,
-          exe: ""
-        }
-        - {
-          os: windows-latest,
-          outname: windows_x86-64,
-          exe: ".exe"
-        }
+        os: 
+          - {
+            name: ubuntu-latest,
+            fname: linux_x86-64,
+            exe: ""
+          }
+          - {
+            name: windows-latest,
+            fname: windows_x86-64,
+            exe: ".exe"
+          }
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.name }}
 
     steps:
     - uses: actions/checkout@v7
@@ -62,13 +63,13 @@ jobs:
       uses: thedoctor0/zip-release@0.7.5
       with:
         type: 'zip'
-        filename: ${{ matrix.outname }}_v${{ steps.semver.outputs.value }}.zip
-        path: ./target/release/timekeeper${{ matrix.exe }}
+        filename: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}.zip
+        path: ./target/release/timekeeper${{ matrix.os.exe }}
     - name: Add files to release
       uses: iamkubi/github-release@2.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: v${{ steps.semver.outputs.value }}
-        files: ${{ matrix.outname }}_v${{ steps.semver.outputs.value }}.zip
+        files: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}.zip
 
 
