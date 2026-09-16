@@ -12,6 +12,8 @@ env:
 
 jobs:
   fetch-cargo-semver:
+    name: Create draft release and enforce tagging
+
     runs-on: ubuntu-latest
 
     steps:
@@ -49,6 +51,7 @@ jobs:
             fname: windows_x86-64,
             exe: ".exe"
           }
+    name: Compile on ${{ matrix.os.name }} and add to release
 
     runs-on: ${{ matrix.os.name }}
 
