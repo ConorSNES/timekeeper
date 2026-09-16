@@ -22,8 +22,10 @@ jobs:
       with:
         file: 'Cargo.toml'
         field: 'package.version'
-    - name: Create/push semver tag
-      run: git tag "v${{ steps.semver.outputs.value }}" && git push origin "v${{ steps.semver.outputs.value }}"
+    - name: Create semver tag
+      run: git tag "v${{ steps.semver.outputs.value }}"
+    - name: Push semver tag
+      run: git push origin "v${{ steps.semver.outputs.value }}"; (exit 0)
     - name: Create release
       uses: iamkubi/github-release@2.0
       with:
