@@ -26,6 +26,7 @@ jobs:
         file: 'Cargo.toml'
         field: 'package.version'
     - name: Create/push semver tag
+      uses: rickstaa/action-create-tag@v1.7.2
       with:
         tag: v${{ steps.semver.outputs.value }}
         message: Auto-generated CI semver from package.version.
