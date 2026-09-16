@@ -106,8 +106,8 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: v${{ steps.semver.outputs.value }}
         files: >
-        linux_x86-64_v${{ steps.semver.outputs.value }}.zip
-        windows_x86-64_v${{ steps.semver.outputs.value }}.zip
+          linux_x86-64_v${{ steps.semver.outputs.value }}.zip
+          windows_x86-64_v${{ steps.semver.outputs.value }}.zip
         gzip: false
         allow_override: true
         draft: false
