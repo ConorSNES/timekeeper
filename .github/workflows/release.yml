@@ -24,22 +24,51 @@ jobs:
         field: 'package.version'
     - name: Create/push semver tag
       run: git tag "v${{ steps.semver.outputs.value }}" && git push origin "v${{ steps.semver.outputs.value }}"
-      
+    - name: Create release
+      uses: iamkubi/github-release@2.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: v${{ steps.semver.outputs.value }}
+
   build-add-files:
     needs: fetch-cargo-semver
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        - {
+          os: ubuntu-latest,
+          outname: linux_x86-64,
+          exe: ""
+        }
+        - {
+          os: windows-latest,
+          outname: windows_x86-64,
+          exe: ".exe"
+        }
 
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v7
-    - name: Collect release tag
-      id: tag
-      uses: "WyriHaximus/github-action-get-previous-tag@v2"
-    - name: Echo release tag
-      run: echo ${{ steps.tag.outputs.value }}
-    # - name: Build program
-    #   run: cargo build --verbose
+    - name: Pull current semver
+      id: semver
+      uses: SebRollen/toml-action@v1.2.0
+      with:
+        file: 'Cargo.toml'
+        field: 'package.version'
+    - name: Build program
+      run: cargo build --verbose -r
+    - name: Compose zip archive
+      uses: thedoctor0/zip-release@0.7.5
+      with:
+        type: 'zip'
+        filename: ${{ matrix.outname }}_v${{ steps.semver.outputs.value }}.zip
+        path: ./target/release/timekeeper${{ matrix.exe }}
+    - name: Add files to release
+      uses: iamkubi/github-release@2.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: v${{ steps.semver.outputs.value }}
+        files: ${{ matrix.outname }}_v${{ steps.semver.outputs.value }}.zip
+
+
