@@ -79,10 +79,11 @@ jobs:
         path: ./target/release/timekeeper${{ matrix.os.exe }}
     - name: Upload artefact
       uses: actions/upload-artifact@v7.0.1
-      name: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}
-      path: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}.zip
-      archive: false
-      overwrite: true
+      with:
+        name: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}
+        path: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}.zip
+        archive: false
+        overwrite: true
 
   add-artefacts-to-release:
     name: Add build artefacts to release
