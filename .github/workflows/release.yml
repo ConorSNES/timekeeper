@@ -31,6 +31,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: v${{ steps.semver.outputs.value }}
+        draft: true
 
   build-add-files:
     needs: fetch-cargo-semver
@@ -73,5 +74,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: v${{ steps.semver.outputs.value }}
         files: ${{ matrix.os.fname }}_v${{ steps.semver.outputs.value }}.zip
+        allow_override: true
+        draft: false
 
 
