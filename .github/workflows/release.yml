@@ -97,8 +97,6 @@ jobs:
       with:
         path: "./"
         skip-decompress: true
-    - name: Debug; list items in directory
-      run: ls -l
     - name: Create release
       uses: softprops/action-gh-release@v3.0.3
       with:
