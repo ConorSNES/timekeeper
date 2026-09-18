@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 pub struct AppState {
     timestamp: Option<DateTime<Local>>,
     borderless: bool,
-    display_12hr: bool,
 }
 
 impl Default for AppState {
@@ -14,7 +13,6 @@ impl Default for AppState {
         Self {
             timestamp: None,
             borderless: false,
-            display_12hr: false,
         }
     }
 }
@@ -30,21 +28,6 @@ impl AppState {
 
     pub fn toggle_borderless(&mut self) {
         self.borderless = !self.borderless
-    }
-
-    pub fn get_12hr(&self) -> bool {
-        self.display_12hr
-    }
-
-    pub fn toggle_12hr(&mut self) {
-        self.display_12hr = !self.display_12hr;
-    }
-
-    pub fn timestamp_format_string(&self) -> &str {
-        match self.get_12hr() {
-            false => "%H:%M:%S",
-            true => "%I:%M:%S %P"
-        }
     }
 
     pub fn get_timestamp(&self) -> Option<DateTime<Local>> {

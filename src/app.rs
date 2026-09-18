@@ -70,13 +70,6 @@ impl App {
     }
 
     /**
-     * Shorthand for self.set_action(AppAction::None)
-     */
-    pub fn reset_action(&mut self) {
-        self.action = AppAction::None;
-    }
-
-    /**
      * collect bg and bg-highlight colours for the current theme
      * 
      * note: theme state is independent of app state while also being persistent
@@ -201,13 +194,11 @@ impl eframe::App for App {
             .show(ui, |ui| {
                 ui.centered_and_justified(|ui| {
                     ui.vertical_centered(|ui| {
-                        if let Some(v) = Self::draw_big_clock(ui, self.state.timestamp_format_string()) {
-                            self.set_action(v);
-                        }
+                        Self::draw_big_clock(ui);
 
                         // add delta time if available;
                         if let Some(timestamp) = self.state.get_timestamp() {
-                            Self::draw_delta_time(ui, self.state.timestamp_format_string(), timestamp);
+                            Self::draw_delta_time(ui, timestamp);
                         }
                     });
                 });
@@ -239,20 +230,14 @@ impl eframe::App for App {
             }
             AppAction::SetTimestamp(v) => {
                 self.state.set_timestamp(v);
-                self.reset_action();
             }
             AppAction::ResTimestamp => {
                 // reset the timestamp
                 self.state.reset_timestamp();
-                self.reset_action();
-            }
-            AppAction::Toggle12Hour => {
-                self.state.toggle_12hr();
-                self.reset_action();
+                self.set_action(AppAction::None);
             }
             AppAction::RefreshBorderless => {
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::Decorations(!self.state.get_borderless()));
-                self.reset_action();
             }
             _ => {}
         }

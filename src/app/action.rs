@@ -9,7 +9,6 @@ pub enum AppAction {
     TimestampRelRequest(String),
     SetTimestamp(DateTime<Local>),
     ResTimestamp,
-    Toggle12Hour,
     RefreshBorderless,
     Exit
 }
