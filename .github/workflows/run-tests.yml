@@ -22,8 +22,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    name: Run tests on ${{ matrix.os }}
+
     steps:
     - uses: actions/checkout@v7
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.9.2
     - name: Build
       run: cargo build --verbose
     - name: Run tests

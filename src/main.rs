@@ -1,3 +1,7 @@
+#![windows_subsystem = "windows"]
+// ^ this disables console in release binary
+// src: https://github.com/emilk/egui/discussions/1003
+
 use eframe::{egui::{self, Vec2}, icon_data::from_png_bytes};
 
 mod app;

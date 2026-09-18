@@ -1,0 +1,1 @@
+Resource file creation/updating only works in environments with Microsoft's resource compiler tool available.
