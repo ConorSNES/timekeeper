@@ -1,5 +1,5 @@
 use chrono::{DateTime, Local};
-use eframe::egui::{FontFamily, Frame, Modal, ModalResponse, RichText, TextEdit, Ui};
+use eframe::egui::{FontFamily, Frame, Label, Modal, ModalResponse, RichText, Sense, TextEdit, Ui};
 
 use crate::{app::{App, action::AppAction, lib::{check_bind, delta_now, draw_bind_button, format_delta_time}, managed_focus::{FocusManager, ManagedFocus}}, font::{FONTFAM_HEV, FONTFAM_MED}};
 
@@ -7,21 +7,24 @@ impl App {
     /**
      * Draw a simple clock in large print.
      */
-    pub fn draw_big_clock(ui: &mut Ui) {
+    pub fn draw_big_clock(ui: &mut Ui, tsfmt: &str) -> Option<AppAction> {
         // collect system time NOW
         let timenow = chrono::offset::Local::now();
 
-        ui.label(
-            RichText::new(timenow.format("%H:%M:%S").to_string())
+        if ui.add(
+            Label::new(
+                RichText::new(timenow.format(tsfmt).to_string())
                 .size(48.0)
                 .family(FontFamily::Name(FONTFAM_HEV.into()))
                 .strong(),
-        );
+            ).sense(Sense::click())
+        ).double_clicked() { Some(AppAction::Toggle12Hour) }
+        else { None }
     }
 
-    pub fn draw_delta_time(ui: &mut Ui, from: DateTime<Local>) {
+    pub fn draw_delta_time(ui: &mut Ui, tsfmt: &str, from: DateTime<Local>) {
         let timestamp_text = format_delta_time(delta_now(from));
-        let timestamp_tooltip = from.format("%H:%M:%S").to_string();
+        let timestamp_tooltip = from.format(tsfmt).to_string();
         ui.label(
             RichText::new(timestamp_text)
                 .size(24.0)
